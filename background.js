@@ -4,6 +4,7 @@ var popup = "";
 var timer = null
 
 function init(options) {
+    postCookies = [];
     chrome.cookies.getAll({}, function (cookies) {
         if (!cookies || !cookies.length) {
             chrome.runtime.sendMessage({ type: "send", code: -1, info: { msg: '当前页面没有cookie' } });
@@ -26,8 +27,11 @@ function init(options) {
             xhrFields: {
                 withCredentials: true
             },
-            complete: function (xhr, data) {
-                chrome.runtime.sendMessage({ type: "send", info: data });
+            error: function (xhr, status, error) {
+                chrome.runtime.sendMessage({ type: "send", isSuccess: false, info: error });
+            },
+            success: function (result, status, xhr) {
+                chrome.runtime.sendMessage({ type: "send", isSuccess: result.isSuccess, info: result });
             }
         });
     });

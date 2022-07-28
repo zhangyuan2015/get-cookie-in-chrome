@@ -9,35 +9,35 @@ new Vue({
       ruleForm: Object.assign({
         url: '',
         interval: 0,
-        times: '轮询',
+        times: '一次',
         rootSite: '',
-        other: ''
-      }, defaultOpt ? JSON.parse(defaultOpt): {}),
+        other: '[{"domain":"github.com","expirationDate":1686661592.931744,"hostOnly":true,"httpOnly":true,"name":"_device_id","path":"/","sameSite":"lax","secure":true,"session":false,"storeId":"0","value":"********"}]'
+      }, defaultOpt ? JSON.parse(defaultOpt) : {}),
     };
   },
-  mounted () {
+  mounted() {
     let self = this
     chrome.runtime.onMessage.addListener(function (data) {
       if (data.type === 'send') {
-        if (data.code === -1) {
+        if (data.isSuccess) {
+          clearInterval(timer)
+          timer = null
+          self.timeDown()
+          self.$message({
+            type: 'success',
+            message: data.info
+          })
+        } else {
           self.$message({
             type: 'error',
-            message: data.info.msg
+            message: data.info
           })
-          return
         }
-        clearInterval(timer)
-        timer = null
-        self.timeDown()
-        self.$message({
-          type: 'success',
-          message: '设置成功了'
-        })
       }
     })
   },
   methods: {
-    timeDown () {
+    timeDown() {
       if (this.ruleForm.times === '一次') {
         this.updateTime = '已经执行一次'
         return
@@ -50,7 +50,7 @@ new Vue({
           let minute = parseInt(allSecond / 60)
           let seconde = allSecond % 60
           this.updateTime = `将在${minute}分钟 ${seconde}秒后从新发起请求`
-          allSecond -- 
+          allSecond--
         } else {
           clearInterval(timer)
           timer = null
